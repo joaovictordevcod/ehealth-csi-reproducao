@@ -1,0 +1,22 @@
+# Dados — não versionar
+eHealth/
+Data_DS2*/
+*.pcap
+*.npz
+!docs/*.npz
+
+# Saídas de execução
+catalogo*.db
+*.jpg
+*.png
+!docs/*.png
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Sistema
+.DS_Store
+__MACOSX/
