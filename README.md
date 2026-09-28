@@ -92,6 +92,8 @@ Códigos de posição em `docs/posicoes.md`.
 | `inspect_npz.py` | Diagnóstico de um arquivo `.npz` isolado, com figuras |
 | `DIARIO.md` | Registro cronológico do trabalho — o que foi feito, o que quebrou, o que foi decidido |
 | `DECISOES.md` | Parâmetros e escolhas que os artigos não documentam |
+| `roteiro/` | Uma issue por arquivo — o roteiro do que falta fazer. Ver `roteiro/README.md` |
+| `criar_issues.py` | Cria no GitHub as issues de `roteiro/`; rodado pelo workflow do Actions |
 
 ---
 
