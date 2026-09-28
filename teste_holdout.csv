@@ -1,0 +1,7 @@
+cenário,SVM,J48,NB,RF
+últimos 18,59.23,56.21,53.36,59.23
+primeiros 18,66.84,64.71,45.81,68.81
+sorteado — média (20x),59.18,60.8,49.18,59.74
+sorteado — desvio-padrão,2.48,3.01,3.17,3.2
+sorteado — mínimo,54.62,55.44,43.7,51.96
+sorteado — máximo,64.14,64.87,58.82,64.87

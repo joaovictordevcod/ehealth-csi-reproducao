@@ -64,15 +64,28 @@ dos artigos; como são constantes, contribuem com features de baixa variância.
 
 | Parâmetro | Valor adotado | O que os artigos dizem | Justificativa |
 |---|---|---|---|
-| Classe 1 (ocupada) | Posições 1 a 17 | 17 posições por participante | Direto |
-| Classe 0 (vazia) | Posição 0, segmentada | 1700 instâncias | Inferência — ver abaixo |
-| Segmentos por gravação vazia | 17 | Não informam | ~100 gravações × 17 = 1700, o número relatado |
-| Referência de sala vazia | Primeira gravação de posição 0 encontrada | "escolhida aleatoriamente" | Escolha determinística, para reprodutibilidade |
+| Classe 1 (ocupada) | Posições 1 a 17, um segmento central por gravação | 17 posições por participante | Direto |
+| Classe 0 (vazia) | Posição 0, 17 segmentos consecutivos por gravação | 1700 instâncias | Inferência — ver abaixo |
+| **Comprimento das séries** | **Uniforme entre as classes: 29 amostras (~3,3 s)** | Não informam | **Obrigatório — ver abaixo** |
+| Posição do segmento nas gravações ocupadas | Central | Não informam | Evita o transiente do início da gravação |
+| Referência de sala vazia | Primeira gravação de posição 0 encontrada, segmento central | "escolhida aleatoriamente" | Escolha determinística, para reprodutibilidade |
+
+**Comprimento uniforme — decisão obrigatória, não opcional.** A distância DTW
+cresce com o comprimento das séries comparadas. Usar a gravação inteira para uma
+classe e segmentos para a outra introduz diferença sistemática de escala entre
+as classes, que os classificadores exploram como atalho. Isso ocorreu na
+primeira execução e produziu desempenho artificialmente alto, inclusive no teste
+com participantes nunca vistos. Ver `DIARIO.md`, entrada de 2026-09-23.
 
 **Inferência principal a declarar:** o artigo relata 1700 instâncias de sala
 vazia, mas existe apenas uma gravação de posição 0 por participante. A
 segmentação de cada gravação em 17 trechos é a interpretação que reproduz o
 número relatado; os artigos não a descrevem.
+
+**Limitação decorrente:** a fragmentação reduz as séries de ~57 s para ~3,3 s.
+O LATINCOM menciona uma coleta contínua de 6 horas de sala vazia, sugerindo que
+os autores dispunham de gravações longas o bastante para extrair trechos de 60 s
+sem fragmentar. O DS2 não oferece isso.
 
 ---
 

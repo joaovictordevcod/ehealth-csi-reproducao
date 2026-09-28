@@ -271,6 +271,90 @@ finitos, zero recálculos necessários, 21 ms por instância.
 
 ---
 
+## 2026-09-23 — Primeira execução completa
+
+Pipeline rodou do início ao fim: 106 participantes, 3510 instâncias,
+X = (3510, 234).
+
+### Tabela 3 — reproduziu
+
+| | obtido | publicado | diferença |
+|---|---|---|---|
+| SVM | 99,81 | 99,90 | −0,09 |
+| RF | 100,00 | 99,90 | +0,10 |
+| NB | 94,40 | 93,43 | +0,97 |
+| J48 | 99,91 | 94,90 | +5,01 |
+
+Três dos quatro classificadores dentro de 1 ponto percentual. A divergência do
+J48 é atribuível à substituição do C4.5 do Weka por `DecisionTreeClassifier`,
+registrada em `DECISOES.md`.
+
+### Tabela 4 — não reproduziu, e na direção errada
+
+| | obtido | publicado | diferença |
+|---|---|---|---|
+| SVM | 99,16 | 76,47 | +22,69 |
+| J48 | 98,99 | 78,92 | +20,07 |
+| NB | 97,15 | 83,33 | +13,82 |
+| RF | 99,33 | 91,18 | +8,15 |
+
+Desempenho **muito superior** ao publicado em teste com participantes nunca
+vistos. O teste de holdout existe para o desempenho cair — no artigo cai de
+99,90 para 91,18. Aqui não caiu. Resultado bom demais em holdout é indício de
+vazamento, não de sucesso.
+
+### Diagnóstico — artefato de comprimento entre as classes
+
+**Causa identificada:** as duas classes usavam séries de comprimentos
+diferentes.
+
+- classe 1 (ocupada): gravação inteira, ~500 amostras
+- classe 0 (vazia): segmento, ~29 amostras
+
+A distância DTW cresce com o comprimento das séries comparadas. As features
+ficaram com escalas sistematicamente diferentes entre as classes, e os
+classificadores exploravam essa diferença como atalho — um atalho independente
+do participante, o que explica o holdout não degradar.
+
+**Verificação:**
+
+| | mediana das features |
+|---|---|
+| classe 1 (ocupada) | 209,37 |
+| classe 0 (vazia) | 70,57 |
+| razão | 3,0 |
+
+O escalonamento esperado do DTW, que cresce com a raiz do comprimento, seria
+√(500/29) ≈ 4,2. A razão observada é da mesma ordem, confirmando que o artefato
+é real. Parte da razão pode ser sinal genuíno — sala ocupada de fato difere mais
+da referência vazia do que outra sala vazia — mas não há como separar as duas
+contribuições sem corrigir o comprimento.
+
+**Correção adotada:** todas as instâncias, das duas classes, passam a usar
+segmentos do mesmo comprimento.
+
+- comprimento do segmento: `len(gravação) // n_empty_segments` = 29 amostras
+- classe 1: um segmento central por gravação → 100 × 17 = 1700
+- classe 0: 17 segmentos consecutivos por gravação → 100 × 17 = 1700
+- referência: segmento central da gravação de referência
+
+O segmento central foi escolhido em vez do inicial para evitar o transiente do
+começo da gravação, em que o participante ainda se acomoda na posição.
+
+**Limitação a declarar no relatório:** com o DS2 não existem 1700 gravações
+independentes de sala vazia de 60 s — há uma por participante. Obter 1700
+instâncias exige fragmentar as gravações, o que reduz o comprimento das séries
+de ~57 s para ~3,3 s. O LATINCOM menciona uma coleta contínua de 6 horas de
+sala vazia, o que sugere que os autores dispunham de gravações longas o
+bastante para extrair trechos de 60 s sem fragmentação. Essa diferença entre o
+dado descrito e o dado disponível é um achado do trabalho.
+
+### Pendente
+
+Reexecução com a correção, e nova comparação com as duas tabelas.
+
+---
+
 ## Estado atual
 
 - [x] Escopo definido e justificado

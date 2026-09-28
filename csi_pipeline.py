@@ -187,16 +187,38 @@ def participant_of(path, root):
 # ─────────────────────────────────────────────────────────────────────────
 # Construção do dataset
 # ─────────────────────────────────────────────────────────────────────────
+def _segmento_central(serie, seg_len):
+    """Trecho central de `seg_len` amostras.
+
+    Usa o centro e não o início para evitar o transiente do começo da gravação,
+    em que o participante ainda está se acomodando na posição.
+    """
+    ini = max(0, (len(serie) - seg_len) // 2)
+    return serie[ini:ini + seg_len]
+
+
 def build_dataset(root, participants=None, ref_file=None, mask=None,
-                  n_empty_segments=17, verbose=True):
+                  n_empty_segments=17, seg_len=None, verbose=True):
     """Percorre o dataset e monta X (features) e y (rótulos).
 
-    Classe 1 = sala ocupada (posições 1..17)
-    Classe 0 = sala vazia (posição 0), segmentada para balancear
+    Classe 1 = sala ocupada (posições 1..17), um segmento por gravação
+    Classe 0 = sala vazia (posição 0), `n_empty_segments` segmentos por gravação
+
+    IMPORTANTE — comprimento uniforme
+    ---------------------------------
+    Todas as instâncias, das duas classes, usam segmentos do MESMO comprimento.
+
+    A distância DTW cresce com o comprimento das séries comparadas. Uma versão
+    anterior deste código usava a gravação inteira (~500 amostras) para a classe
+    1 e segmentos (~29 amostras) para a classe 0. O resultado foi uma diferença
+    sistemática de escala entre as classes — mediana de 209 contra 71 — que os
+    classificadores exploravam como atalho, produzindo desempenho artificialmente
+    alto inclusive em participantes nunca vistos. Ver DIARIO.md.
 
     n_empty_segments: quantos trechos extrair de cada gravação de sala vazia.
         Os artigos relatam 1700 instâncias vazias a partir de ~100 gravações,
-        o que implica ~17 segmentos por gravação. Essa inferência precisa
+        o que implica 17 segmentos por gravação. Com 17 posições ocupadas por
+        participante, a proporção resulta balanceada. Essa inferência precisa
         constar no relatório.
     """
     root = Path(root)
@@ -226,28 +248,55 @@ def build_dataset(root, participants=None, ref_file=None, mask=None,
         print(f"referência de sala vazia: {Path(ref_file).name}")
 
     ref_proc = preprocess(load_amplitude(ref_file))
+    n_total = len(ref_proc)
+
+    # Comprimento comum a todas as instâncias das duas classes.
+    if seg_len is None:
+        seg_len = n_total // n_empty_segments      # sem sobreposição
+    seg_len = min(int(seg_len), n_total)
+    if seg_len < 10:
+        raise RuntimeError(f"segmento de {seg_len} amostras é curto demais")
+
+    # Janelas da sala vazia: uniformemente espaçadas ao longo da gravação.
+    # Quando seg_len > n_total / n_empty_segments elas se sobrepõem — o que é
+    # necessário para obter 1700 instâncias com séries longas. A sobreposição
+    # é registrada em `overlap` e precisa constar no relatório.
+    max_ini = n_total - seg_len
+    inicios = (np.linspace(0, max_ini, n_empty_segments).astype(int)
+               if max_ini > 0 else np.zeros(n_empty_segments, dtype=int))
+    passo = int(np.median(np.diff(inicios))) if n_empty_segments > 1 else seg_len
+    overlap = max(0.0, 1 - passo / seg_len) if seg_len else 0.0
+
+    ref_seg = _segmento_central(ref_proc, seg_len)
+    if verbose:
+        dur = seg_len * PARAMS["subsample"] / 34.9   # taxa medida do DS2
+        print(f"segmento: {seg_len} amostras (~{dur:.1f} s) "
+              f"de {n_total} | sobreposição entre janelas vazias: "
+              f"{overlap * 100:.0f}%")
 
     for n, (p, posmap) in enumerate(sorted(por_participante.items()), 1):
-        # ocupada
+        # ocupada — um segmento central por gravação
         for pos in range(1, 18):
             if pos not in posmap:
                 continue
             amp = preprocess(load_amplitude(posmap[pos]))
-            X.append(dtw_features(amp, ref_proc, mask))
+            seg = _segmento_central(amp, seg_len)
+            if len(seg) != seg_len:
+                continue
+            X.append(dtw_features(seg, ref_seg, mask))
             y.append(1)
             meta.append({"participant": p, "position": pos, "label": 1})
 
-        # vazia, segmentada
+        # vazia — n_empty_segments janelas do mesmo comprimento
         if 0 in posmap and posmap[0] != ref_file:
             amp_full = preprocess(load_amplitude(posmap[0]))
-            seg_len = len(amp_full) // n_empty_segments
-            if seg_len > 10:
-                for s in range(n_empty_segments):
-                    seg = amp_full[s * seg_len:(s + 1) * seg_len]
-                    ref_seg = ref_proc[:len(seg)]
-                    X.append(dtw_features(seg, ref_seg, mask))
-                    y.append(0)
-                    meta.append({"participant": p, "position": 0, "label": 0})
+            for ini in inicios:
+                seg = amp_full[ini:ini + seg_len]
+                if len(seg) != seg_len:
+                    continue
+                X.append(dtw_features(seg, ref_seg, mask))
+                y.append(0)
+                meta.append({"participant": p, "position": 0, "label": 0})
 
         if verbose and n % 5 == 0:
             print(f"  {n}/{len(por_participante)} participantes | {len(X)} instâncias")
