@@ -87,6 +87,26 @@ O LATINCOM menciona uma coleta contínua de 6 horas de sala vazia, sugerindo que
 os autores dispunham de gravações longas o bastante para extrair trechos de 60 s
 sem fragmentar. O DS2 não oferece isso.
 
+### Sobreposição das janelas de sala vazia
+
+| Parâmetro | Valor adotado | Justificativa |
+|---|---|---|
+| Comprimento de referência | 29 amostras, **sem sobreposição** | Única configuração livre de vazamento na divisão aleatória |
+| Comprimentos maiores | Permitidos via `seg_len`, com janelas sobrepostas | Usados apenas na varredura de duração, para análise |
+
+Com uma única gravação de posição 0 por participante, segmentos mais longos que
+`gravação / 17` só produzem 17 janelas se elas se sobrepuserem. A sobreposição
+vai de 55% (6,9 s) a 98% (45,8 s).
+
+**Janelas sobrepostas invalidam a divisão aleatória.** São quase duplicatas: na
+divisão 70/30 caem em treino e teste ao mesmo tempo. A varredura mostrou o
+efeito — a acurácia na divisão aleatória sobe com a sobreposição, a acurácia em
+participantes não vistos não sobe, e a diferença entre as duas cresce de 27 para
+44 pontos. Ver `DIARIO.md`, entrada de 2026-09-23.
+
+**Consequência:** resultados com sobreposição só são interpretáveis no protocolo
+por participante.
+
 ---
 
 ## Classificação
@@ -121,12 +141,20 @@ podem ter essa origem.
 | Parâmetro | Valor adotado | O que os artigos dizem | Justificativa |
 |---|---|---|---|
 | Quantidade | 18 participantes | 18 | Direto |
-| Seleção | 18 maiores identificadores | Não informam quais | Critério determinístico |
+| Seleção (pipeline principal) | 18 maiores identificadores | Não informam quais | Critério determinístico |
+| Seleção (análise de sensibilidade) | Últimos 18, primeiros 18, 20 sorteios | — | Ver `teste_holdout.py` |
 
 **Limitação a declarar:** a composição do conjunto de teste quase certamente
 difere da usada pelos autores. A Tabela 4 é, por isso, a menos provável de
 reproduzir exatamente. A magnitude da queda de desempenho é mais informativa que
 o valor absoluto.
+
+**Sensibilidade à escolha verificada.** Os identificadores são sequenciais por
+ordem de coleta, então os 18 maiores são os coletados por último. O teste com 20
+sorteios mostrou que essa escolha não enviesa o resultado — média dos sorteios
+59,74% contra 59,23% nos últimos 18, no RF. Os primeiros 18, porém, ficam acima
+de toda a faixa dos sorteios (68,81%), o que motivou a investigação de deriva
+temporal.
 
 ---
 

@@ -85,6 +85,9 @@ Códigos de posição em `docs/posicoes.md`.
 | `csi_pipeline.py` | Leitura dos `.npz`, pré-processamento, extração de features por DTW |
 | `run_experiment.py` | Classificadores, tabelas de resultado, comparação com os valores publicados |
 | `analyze.py` | Roda a análise a partir de um `features.npz` já calculado |
+| `varredura_duracao.py` | Efeito da duração do segmento nos dois protocolos de avaliação |
+| `teste_holdout.py` | Sensibilidade do resultado à escolha dos 18 participantes de teste |
+| `teste_deriva.py` | Verifica deriva do ambiente ao longo da coleta |
 | `build_catalog.py` | Indexa o dataset em SQLite para inspeção |
 | `inspect_npz.py` | Diagnóstico de um arquivo `.npz` isolado, com figuras |
 | `DIARIO.md` | Registro cronológico do trabalho — o que foi feito, o que quebrou, o que foi decidido |
@@ -94,23 +97,33 @@ Códigos de posição em `docs/posicoes.md`.
 
 ## Como executar
 
+O ambiente virtual fica fora do repositório, em `~/venv-csi`.
+
 ```bash
-python3 -m venv venv
-./venv/bin/pip install numpy pandas scikit-learn dtaidistance datasette
+python3 -m venv ~/venv-csi
+~/venv-csi/bin/pip install numpy pandas scipy scikit-learn dtaidistance datasette
+
+DATA=~/Downloads/eHealth/Data_DS2_raspberry_npz
 
 # 1. inspecionar o dataset
-./venv/bin/python build_catalog.py /caminho/Data_DS2_raspberry_npz catalogo.db valid.txt
-./venv/bin/datasette catalogo.db
+~/venv-csi/bin/python build_catalog.py $DATA catalogo.db valid.txt
+~/venv-csi/bin/datasette catalogo.db
 
-# 2. rodar o experimento completo (calcula DTW, ~10 min)
-./venv/bin/python run_experiment.py /caminho/Data_DS2_raspberry_npz
+# 2. experimento principal (calcula DTW, ~10 min)
+~/venv-csi/bin/python run_experiment.py $DATA
 
 # 3. reanalisar sem recalcular DTW
-./venv/bin/python analyze.py
+~/venv-csi/bin/python analyze.py
+
+# 4. análises de sensibilidade
+~/venv-csi/bin/python varredura_duracao.py $DATA       # ~20 min
+~/venv-csi/bin/python teste_holdout.py features_seg29.npz 20
+~/venv-csi/bin/python teste_deriva.py features_seg29.npz
 ```
 
-Saídas: `features.npz` (matriz de features) e `registro_execucao.json`
-(parâmetros e resultados de cada execução).
+Saídas: `features*.npz` (matrizes de features, não versionadas),
+`registro_execucao.json`, `varredura_duracao.csv`, `teste_holdout.csv` e
+`teste_deriva.csv` (resultados, versionados).
 
 ---
 

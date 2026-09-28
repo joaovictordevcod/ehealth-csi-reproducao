@@ -1,0 +1,27 @@
+name: Criar issues do roteiro
+
+# Cria as labels, as fases (milestones) e as issues do roteiro de trabalho,
+# conforme definidas em criar_issues.py.
+#
+# Disparo manual: aba Actions -> "Criar issues do roteiro" -> Run workflow.
+# Pode ser executado mais de uma vez: o que já existe é ignorado.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  criar-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Criar labels, milestones e issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 criar_issues.py

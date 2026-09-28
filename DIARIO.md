@@ -349,9 +349,117 @@ sala vazia, o que sugere que os autores dispunham de gravações longas o
 bastante para extrair trechos de 60 s sem fragmentação. Essa diferença entre o
 dado descrito e o dado disponível é um achado do trabalho.
 
-### Pendente
+---
 
-Reexecução com a correção, e nova comparação com as duas tabelas.
+## 2026-09-23 — Execução com comprimento uniforme (29 amostras)
+
+Reexecução com segmentos de 29 amostras (~3,3 s) nas duas classes.
+
+| | aleatório 70/30 | participantes não vistos | publicado (T3 / T4) |
+|---|---|---|---|
+| SVM | 65,53 | 59,06 | 99,90 / 76,47 |
+| J48 | 63,63 | 55,54 | 94,90 / 78,92 |
+| NB | 48,62 | 53,86 | 93,43 / 83,33 |
+| RF | 88,13 | 56,21 | 99,90 / 91,18 |
+
+**O atalho sumiu:** o teste com participantes não vistos agora degrada em
+relação à divisão aleatória, como esperado.
+
+**Mas o desempenho caiu muito abaixo do publicado.** O NB chega a 48,62% com
+recall de 2,25% — classifica quase tudo como sala vazia.
+
+**Hipótese:** a correção igualou os comprimentos por baixo, reduzindo a classe 1
+de 57 s para 3,3 s e descartando 94% de cada gravação ocupada. O RF ainda
+encontra 88% de sinal, indicando que há informação, mas pouca.
+
+---
+
+## 2026-09-23 — Varredura da duração do segmento
+
+Script: `varredura_duracao.py`. Testa cinco durações, nos dois protocolos.
+
+Para obter 1700 instâncias de sala vazia com segmentos longos, as janelas da
+posição 0 precisam se sobrepor. A sobreposição cresce com a duração.
+
+### Random Forest
+
+| duração | sobreposição | aleatório 70/30 | não vistos | queda |
+|---|---|---|---|---|
+| 3,3 s | 0% | 86,80 | 59,23 | 27,6 |
+| 6,9 s | 55% | 90,88 | 57,05 | 33,8 |
+| 14,3 s | 82% | 94,21 | 55,20 | 39,0 |
+| 28,7 s | 94% | 96,30 | 55,70 | 40,6 |
+| 45,8 s | 98% | 98,29 | 54,19 | 44,1 |
+
+### Todos os classificadores — participantes não vistos
+
+| duração | SVM | J48 | NB | RF |
+|---|---|---|---|---|
+| 3,3 s | 59,23 | 56,21 | 53,36 | 59,23 |
+| 6,9 s | 58,05 | 58,72 | 54,03 | 57,05 |
+| 14,3 s | 60,07 | 55,87 | 50,67 | 55,20 |
+| 28,7 s | 59,73 | 57,21 | 50,17 | 55,70 |
+| 45,8 s | 63,93 | 57,38 | 48,15 | 54,19 |
+
+### Conclusão — o ganho com duração é vazamento, não sinal
+
+Na divisão aleatória o RF sobe até 98,29%, quase o valor publicado. No teste com
+participantes não vistos ele **não sobe** — cai levemente — e a queda entre os
+dois protocolos cresce de 27 para 44 pontos.
+
+A queda acompanha a sobreposição das janelas de sala vazia. Janelas sobrepostas
+de um mesmo participante são quase duplicatas; na divisão aleatória elas caem
+em treino e teste ao mesmo tempo, e o teste deixa de medir generalização. No
+protocolo por participante isso não ocorre, porque o participante inteiro sai
+do treino.
+
+**O desempenho real de generalização no DS2 fica entre 54% e 64%,
+independentemente da duração.** O publicado na Tabela 4 é 76–91%.
+
+**Implicação a verificar, sem afirmar:** se os autores também fragmentaram
+gravações curtas de sala vazia com sobreposição, a Tabela 3 deles estaria
+sujeita ao mesmo efeito. O LATINCOM menciona uma coleta contínua de 6 horas,
+o que sugere que eles tinham material para não precisar sobrepor. É uma
+pergunta para o grupo responsável, não uma conclusão.
+
+---
+
+## 2026-09-28 — A escolha dos 18 participantes explica a diferença?
+
+Script: `teste_holdout.py`, sobre as features de 29 amostras (sem sobreposição).
+
+**Motivação:** o holdout usava os 18 maiores identificadores. Os IDs são
+sequenciais por ordem de coleta, então isso testava nos participantes coletados
+por último — os mais distantes no tempo da referência de sala vazia
+(participante 001).
+
+| cenário | SVM | J48 | NB | RF |
+|---|---|---|---|---|
+| últimos 18 | 59,23 | 56,21 | 53,36 | 59,23 |
+| **primeiros 18** | 66,84 | 64,71 | 45,81 | **68,81** |
+| sorteados — média (20×) | 59,18 | 60,80 | 49,18 | 59,74 |
+| sorteados — desvio-padrão | 2,48 | 3,01 | 3,17 | 3,20 |
+| sorteados — máximo | 64,14 | 64,87 | 58,82 | 64,87 |
+| publicado (Tabela 4) | 76,47 | 78,92 | 83,33 | 91,18 |
+
+**A escolha do holdout não explica a diferença.** Sortear os 18 dá praticamente
+o mesmo que usar os últimos — 59,74 contra 59,23 no RF.
+
+**Mas os primeiros 18 destoam.** RF a 68,81%, quase 3 desvios-padrão acima da
+média dos sorteios e acima do máximo em 20 repetições. Não é ruído.
+
+Os primeiros participantes são contemporâneos da referência de sala vazia. Isso
+é consistente com **deriva do ambiente ao longo da coleta**: se a sala mudou
+nos meses de coleta, a distância até uma referência antiga cresce, e salas
+vazias tardias passam a parecer ocupadas.
+
+Mesmo no melhor caso, o resultado fica 22 pontos abaixo do publicado. A deriva
+explicaria parte da diferença, não toda.
+
+### Próximo passo
+
+Medir diretamente a deriva: `teste_deriva.py` verifica se a distância das
+gravações de sala vazia até a referência cresce com o número do participante.
 
 ---
 
@@ -363,13 +471,13 @@ Reexecução com a correção, e nova comparação com as duas tabelas.
 - [x] Custo do DTW medido
 - [x] Pipeline implementado
 - [x] Bugs numéricos do DTW diagnosticados e corrigidos
-- [ ] **Execução completa com a correção final** — pendente
-- [ ] Comparação com Tabela 3
-- [ ] Comparação com Tabela 4
-- [ ] Curva de seleção de atributos
+- [x] Execução completa
+- [x] Artefato de comprimento entre classes identificado e corrigido
+- [x] Varredura de duração — ganho com segmentos longos é vazamento
+- [x] Teste de holdout — escolha dos 18 não explica a diferença
+- [ ] **Teste de deriva temporal** — próximo
+- [ ] Investigar a causa restante da diferença na Tabela 4
+- [ ] Figuras para o relatório
 - [ ] Redação do relatório
 
-### Próximo passo
-
-Rodar `run_experiment.py` com a versão corrigida de `dtw_features` e registrar
-os resultados.
+Acompanhamento detalhado nas issues do repositório.
