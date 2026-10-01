@@ -488,6 +488,15 @@ de todas as gravações) é um ticket do mapa.
 - Prazo desta fase: 12/10/2026.
 - O roteiro passa ao mapa do GitHub (issue #1); `roteiro/` vira histórico.
 
+**Datas do DS2 pela Polar H10** (gravada junto com o CSI; o CSI ainda não foi
+copiado para esta máquina): 1673 gravações de 30/10/2023 a 09/10/2025 —
+out/2023–jan/2024: 1003; jun/2024: 17; out/2024–jan/2025: 582;
+jul–out/2025: 54. A coleta cobre ~2 anos; nenhuma sessão é anterior ao artigo.
+Os 18 participantes de teste são de 2025; a referência é de out/2023.
+
+**Protocolo de seleção da melhor configuração** definido — ver `DECISOES.md`,
+seção *Seleção da melhor configuração encontrada*.
+
 ---
 
 ## Estado atual

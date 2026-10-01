@@ -158,6 +158,27 @@ temporal.
 
 ---
 
+## Seleção da melhor configuração encontrada
+
+A configuração final segue o texto dos artigos. As varreduras de parâmetros não
+documentados são análise de sensibilidade; a "melhor configuração encontrada"
+entra como linha à parte na tabela obtido × publicado, escolhida pelo protocolo
+abaixo, **sem olhar o conjunto de teste**.
+
+| Item | Decisão | Justificativa |
+|---|---|---|
+| Conjunto de teste | 18 maiores identificadores, intocados até o fim | Escolher olhando o teste é vazamento |
+| Validação | Validação cruzada agrupada por participante, 5 partes, só nos 82 de treino, semente 42 | Uma partição única varia ~3 pontos (desvio-padrão dos sorteios em `teste_holdout.py`), da ordem das diferenças entre configurações |
+| Formação das partes (escolha) | Grupos sorteados | O protocolo do artigo não considera o tempo |
+| Formação das partes (verificação) | Blocos contíguos por ordem de coleta, registrados ao lado | A coleta do DS2 vai de out/2023 a out/2025; o teste é o período mais recente. Vencedor diferente entre os dois esquemas é achado sobre deriva |
+| Critério | Acurácia média do RF nas 5 partes; SVM, J48 e NB reportados na mesma configuração | Configuração única mantém as colunas comparáveis, como no artigo; RF é o destaque do artigo. Partes balanceadas, então acurácia não engana |
+| Varreduras | Grade dentro de cada bloco (pré-processamento 3×3, DTW 3×2, subamostragem 4), demais parâmetros na configuração fiel | Grade completa (216) cabe no prazo só com reescrita do código e aumenta o viés de seleção |
+| Regra de vitória | Substitui a configuração fiel só com média do RF ≥ 1 ponto maior **e** melhor em ≥ 4 das 5 partes, comparando nas mesmas partes | Evita promover ruído a resultado; teste formal com 5 pares quase nunca seria significativo |
+| Combinação | Vencedores dos blocos combinados numa rodada final, sob a mesma regra; se perder, fica o melhor vencedor isolado; se nenhum bloco vencer, a melhor encontrada é a fiel | — |
+| Avaliação no teste | Uma única vez, no fim: configuração fiel e melhor encontrada | — |
+
+---
+
 ## Instâncias descartadas
 
 | Situação | Tratamento |
