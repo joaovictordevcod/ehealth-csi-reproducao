@@ -1,5 +1,9 @@
 # Roteiro
 
+> **Histórico — substituído em 01/10/2026.** O roteiro de trabalho agora vive no
+> mapa do GitHub: [Mapa: replicação da Seção VII do IEEE Access no DS2](https://github.com/joaovictordevcod/ehealth-csi-reproducao/issues/1).
+> Estas fichas ficam só como registro; não crie issues a partir delas.
+
 Cada arquivo `NN-*.md` desta pasta é uma issue do repositório. O número no nome
 define a ordem em que devem ser feitas.
 

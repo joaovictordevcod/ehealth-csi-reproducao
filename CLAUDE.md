@@ -11,7 +11,8 @@ histórico completo de decisões, os resultados já obtidos, os problemas já
 enfrentados e as correções já aplicadas. Não refaça análises que já estão
 registradas ali.
 
-**O que falta fazer está nas issues do repositório**, numeradas em ordem.
+**O que falta fazer está no mapa do GitHub** (issue com label `wayfinder:map`)
+e nas sub-issues dele. Glossário em `CONTEXT.md`.
 
 ---
 
@@ -40,7 +41,11 @@ desempenho — e isso também é publicável.
 - Os primeiros 18 participantes vão melhor que os demais, o que sugere deriva
   do ambiente ao longo da coleta.
 
-**Próximo passo:** `teste_deriva.py`. Ver issues.
+- **As gravações do DS2 são de out/2023 em diante, posteriores ao IEEE Access
+  (jul/2023).** O trabalho é uma *replicação* do método no DS2, não reprodução.
+- Alvo único: Tabelas 3 e 4 da Seção VII do IEEE Access.
+
+**Próximo passo:** ver a frente de trabalho do mapa no GitHub.
 
 ---
 

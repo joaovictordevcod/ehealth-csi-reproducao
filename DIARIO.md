@@ -463,6 +463,33 @@ gravações de sala vazia até a referência cresce com o número do participant
 
 ---
 
+## 2026-10-01 — Datas do DS2 e redefinição do escopo
+
+**Descoberta:** as gravações do DS2 têm datas de 30/10/2023 (participante 001)
+e 08/11/2023 (exemplo do `README_DS2.md`). O IEEE Access foi recebido em
+02/06/2023 e publicado em 11/07/2023. Portanto **a Seção VII não pode ter usado
+o DS2** — quase certamente usou o DS1 (500 pacotes/min, posições 1–17, 118
+participantes). A coincidência 100 × 17 = 1700 que motivou a opção B da entrada
+*Descoberta: DS1 vs DS2* não prova correspondência. Verificação completa (datas
+de todas as gravações) é um ticket do mapa.
+
+**Observação:** no DS2 a sala vazia é gravada primeiro, e a ordem das posições é
+1, 3, 4, 6, 8, 10, 12, 14, 2, 5, 7, 9, 11, 13, 15–18. Há possível deriva também
+*dentro* da sessão.
+
+**Decisões:**
+- O trabalho passa a ser **replicação** do método no DS2, não reprodução.
+- Alvo único: Tabelas 3 e 4 da Seção VII do IEEE Access. Resultados do
+  LATINCOM (desbalanceado, seleção de atributos) saem do escopo.
+- Configuração final segue o texto dos artigos; varreduras são análise de
+  sensibilidade, e a melhor configuração encontrada (escolhida sem olhar o
+  teste) entra como linha à parte.
+- Nada depende de resposta do MidiaCom; o e-mail vai sem bloquear.
+- Prazo desta fase: 12/10/2026.
+- O roteiro passa ao mapa do GitHub (issue #1); `roteiro/` vira histórico.
+
+---
+
 ## Estado atual
 
 - [x] Escopo definido e justificado
